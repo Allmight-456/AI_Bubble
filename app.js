@@ -397,6 +397,72 @@ function renderFooter() {
   `;
 }
 
+// ---- Sticky mini-nav --------------------------------------------------
+
+function renderMiniNav() {
+  const wrap = document.querySelector('[data-mini-nav]');
+  if (!wrap) return;
+  const list = wrap.querySelector('.mini-nav__list');
+  if (!list) return;
+  list.innerHTML = CONTENT.sections
+    .map(
+      (s) => `
+      <a class="mini-nav__link" href="#${s.id}" data-target="${s.id}" aria-label="${escapeHTML(s.label)}">
+        <span aria-hidden="true">${escapeHTML(s.roman)}</span>
+      </a>`
+    )
+    .join('');
+}
+
+function initMiniNav() {
+  const wrap = document.querySelector('[data-mini-nav]');
+  const heroEl = document.getElementById('hero');
+  if (!wrap || !heroEl) return;
+
+  // Show after the hero leaves the viewport.
+  const heroObserver = new IntersectionObserver(
+    ([entry]) => {
+      const heroVisible = entry.isIntersecting;
+      if (heroVisible) wrap.setAttribute('hidden', '');
+      else wrap.removeAttribute('hidden');
+    },
+    { threshold: 0.05 }
+  );
+  heroObserver.observe(heroEl);
+
+  // Track active section via observer.
+  const links = wrap.querySelectorAll('.mini-nav__link');
+  const stripLinks = document.querySelectorAll('.hero__strip-link');
+  const byId = new Map();
+  links.forEach((l) => byId.set(l.dataset.target, l));
+
+  function setActive(id) {
+    links.forEach((l) => {
+      const isActive = l.dataset.target === id;
+      if (isActive) l.setAttribute('aria-current', 'location');
+      else l.removeAttribute('aria-current');
+    });
+    stripLinks.forEach((l) => {
+      const href = l.getAttribute('href') || '';
+      if (href === `#${id}`) l.setAttribute('aria-current', 'location');
+      else l.removeAttribute('aria-current');
+    });
+  }
+
+  const sectionEls = CONTENT.sections.map((s) => document.getElementById(s.id)).filter(Boolean);
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      // Pick the entry with the largest intersection ratio that is intersecting.
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { threshold: [0.25, 0.5, 0.75], rootMargin: '-20% 0px -50% 0px' }
+  );
+  sectionEls.forEach((s) => sectionObserver.observe(s));
+}
+
 // ---- Animations -------------------------------------------------------
 
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
@@ -462,6 +528,8 @@ function renderAll() {
     if (el && fn) fn(el);
   });
   renderFooter();
+  renderMiniNav();
+  initMiniNav();
   initMetricCounters();
 }
 
