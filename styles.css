@@ -65,6 +65,228 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
 
 .section__inner { max-width: var(--max-w); margin: 0 auto; }
 
-/* Phase 0 placeholder — empty sections render without errors. */
 .site-footer { padding: 1rem var(--gutter); border-top: 1px solid var(--canvas-rule); }
 .mini-nav    { position: sticky; top: 0; z-index: 10; }
+
+/* ----- Hero (§I) -------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 0;
+  color: var(--oil-paper);
+  background: var(--oil-cypress);
+  overflow: hidden;
+}
+
+.hero__art {
+  position: absolute; inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero__sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, var(--oil-sky) 0%, transparent 55%),
+    radial-gradient(ellipse 110% 60% at 50% 35%, var(--oil-cloud) 0%, transparent 55%),
+    linear-gradient(180deg, #2A3340 0%, #3D4452 30%, var(--oil-cypress) 90%);
+}
+
+/* Inline base64 noise — ~1KB, deterministic film grain. */
+.hero__noise {
+  position: absolute; inset: 0;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.85 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+}
+
+.hero__cypress {
+  position: absolute;
+  bottom: -10px;
+  width: clamp(220px, 28vw, 380px);
+  height: auto;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.35));
+}
+.hero__cypress--left  { left: -2vw; }
+.hero__cypress--right { right: -2vw; transform: scaleX(-1); }
+
+.hero__layout {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(4rem, 10vh, 8rem) var(--gutter) clamp(3rem, 8vh, 5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+.hero__copy { position: relative; max-width: 64ch; }
+
+.hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--oil-paper);
+  opacity: 0.75;
+  margin: 0 0 1.5rem;
+}
+
+.hero__title {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  margin: 0 0 1.25rem;
+  color: var(--oil-paper);
+  letter-spacing: -0.02em;
+}
+
+.t-sans { font-family: var(--font-sans); }
+.t-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.t-underline-pink {
+  text-decoration: underline;
+  text-decoration-color: var(--alarm-pink);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.1em;
+}
+
+.hero__subtitle {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-h2);
+  line-height: 1.3;
+  color: var(--oil-paper);
+  margin: 0;
+  max-width: 36ch;
+}
+
+.hero__candle-wrap {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -2rem;
+  width: clamp(120px, 18vw, 200px);
+  transform: rotate(6deg);
+  color: var(--alarm-pink);
+  filter: drop-shadow(0 0 12px var(--alarm-pink-glow));
+}
+.hero__candle { width: 100%; height: auto; display: block; }
+
+/* Right-rail roman-numeral index */
+.hero__index {
+  align-self: center;
+  border-left: 1px solid rgba(234, 224, 204, 0.18);
+  padding-left: clamp(1rem, 2vw, 2rem);
+}
+.hero__index-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--oil-paper);
+  opacity: 0.6;
+  margin: 0 0 1rem;
+}
+.hero__index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 16rem;
+}
+.hero__index-link {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  text-decoration: none;
+  color: var(--oil-paper);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  border-bottom: 1px solid rgba(234, 224, 204, 0.08);
+}
+.hero__index-link:hover,
+.hero__index-link:focus-visible {
+  outline: none;
+}
+.hero__index-link:hover .hero__index-name,
+.hero__index-link:focus-visible .hero__index-name {
+  transform: translateX(4px);
+  color: #fff;
+}
+.hero__index-name {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+  display: inline-block;
+}
+.hero__index-roman {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+.hero__index-link:hover .hero__index-roman,
+.hero__index-link:focus-visible .hero__index-roman {
+  opacity: 1;
+}
+
+/* Mobile horizontal strip — hidden on desktop */
+.hero__strip { display: none; }
+
+@media (max-width: 768px) {
+  .hero__layout {
+    grid-template-columns: 1fr;
+    padding-top: clamp(3.5rem, 10vh, 6rem);
+    padding-bottom: 2rem;
+    align-items: start;
+    gap: 2rem;
+  }
+  .hero__index { display: none; }
+
+  .hero__strip {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 var(--gutter) 1.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .hero__strip::-webkit-scrollbar { display: none; }
+  .hero__strip-link {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid rgba(234, 224, 204, 0.35);
+    color: var(--oil-paper);
+    font-family: var(--font-serif);
+    font-style: italic;
+    text-decoration: none;
+  }
+  .hero__strip-link[aria-current="location"] {
+    background: var(--alarm-pink);
+    border-color: var(--alarm-pink);
+    color: var(--canvas-ink);
+  }
+
+  .hero__candle-wrap { right: 0; bottom: -1rem; }
+  .hero__cypress { width: 60vw; }
+}
