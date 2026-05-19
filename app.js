@@ -20,6 +20,31 @@ function escapeHTML(s) {
     .replace(/'/g, '&#39;');
 }
 
+// Resolve a source key → reference object from CONTENT.sources.references.
+const SOURCES_BY_KEY = Object.fromEntries(
+  (CONTENT.sources.references || []).map((r) => [r.key, r])
+);
+
+function sourceLinkHTML(srcKey, opts = {}) {
+  if (!srcKey) return '';
+  const ref = SOURCES_BY_KEY[srcKey];
+  if (!ref) return '';
+  const variant = opts.variant || 'inline'; // 'inline' | 'card'
+  const label = ref.label;
+  if (!ref.url) {
+    return `<span class="src src--${variant}" title="${escapeHTML(label)}">source</span>`;
+  }
+  return `
+    <a class="src src--${variant}"
+       href="${escapeHTML(ref.url)}"
+       target="_blank" rel="noopener noreferrer"
+       title="${escapeHTML(label)}">
+      <span class="src__label">${escapeHTML(label)}</span>
+      <span class="src__icon" aria-hidden="true">↗</span>
+    </a>
+  `;
+}
+
 function titleHTML(parts) {
   return parts
     .map((p) => {
@@ -46,7 +71,6 @@ const FALLING_CANDLE_SVG = `
 `;
 
 function cypressSVG(side) {
-  // Three layered cypress silhouettes per side; slight variation in heights.
   return `
     <svg class="hero__cypress hero__cypress--${side}" viewBox="0 0 320 280" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
       <g fill="var(--oil-cypress)">
@@ -113,11 +137,25 @@ function renderHero(el) {
 function renderThePattern(el) {
   const { thePattern, sections } = CONTENT;
   const meta = sections.find((s) => s.id === 'the-pattern');
-  // Render lede with "fourth iteration" highlighted.
   const ledeHTML = escapeHTML(thePattern.lede).replace(
     'fourth iteration',
     '<mark class="pattern__highlight">fourth iteration</mark>'
   );
+
+  const voices = (thePattern.voices || [])
+    .map(
+      (v) => `
+      <figure class="voice">
+        <blockquote class="voice__quote">${escapeHTML(v.quote)}</blockquote>
+        <figcaption class="voice__cite">
+          <span class="voice__who">${escapeHTML(v.who)}</span>
+          <span class="voice__role">${escapeHTML(v.role)}</span>
+          <span class="voice__date">${escapeHTML(v.date)}</span>
+          ${sourceLinkHTML(v.srcKey, { variant: 'card' })}
+        </figcaption>
+      </figure>`
+    )
+    .join('');
 
   el.innerHTML = `
     <div class="section__inner pattern">
@@ -135,10 +173,16 @@ function renderThePattern(el) {
             <li class="pillar ${p.k === '?' ? 'pillar--alarm' : ''}">
               <span class="pillar__k">${escapeHTML(p.k)}</span>
               <span class="pillar__v">${escapeHTML(p.v)}</span>
+              ${sourceLinkHTML(p.srcKey, { variant: 'inline' })}
             </li>`
             )
             .join('')}
         </ul>
+      </div>
+
+      <div class="voices">
+        <p class="voices__intro">${escapeHTML(thePattern.voicesIntro)}</p>
+        <div class="voices__grid">${voices}</div>
       </div>
     </div>
   `;
@@ -162,14 +206,13 @@ function renderFourBubbles(el) {
     .join('');
 
   const rows = fourBubbles.rows
-    .map((row, rIdx) => {
+    .map((row) => {
       const isPctRow = row.label === 'What happened next?';
       const cells = row.cells
         .map((c, cIdx) => {
           const isAi = cIdx === row.cells.length - 1;
           let body = escapeHTML(c);
           if (isPctRow) {
-            // Highlight ~78%, ~63%, ~57% on non-AI; "?" or numeric on AI not present.
             body = body.replace(/~(\d{2})%/g, '<span class="bubbles__pct">~$1%</span>');
           }
           return `<div class="bubbles__cell${isAi ? ' bubbles__cell--ai' : ''}" role="cell">${body}</div>`;
@@ -222,9 +265,18 @@ function renderTodaysPicture(el) {
           <p class="metric__label">${escapeHTML(m.label)}</p>
           <p class="metric__value" data-value="${escapeHTML(m.value)}">${escapeHTML(m.value)}</p>
           <p class="metric__context">${escapeHTML(m.context)}</p>
+          ${sourceLinkHTML(m.srcKey, { variant: 'card' })}
         </article>`;
     })
     .join('');
+
+  const contradiction = todaysPicture.contradictionNote
+    ? `
+      <aside class="grown-up" role="note">
+        <p class="grown-up__title">${escapeHTML(todaysPicture.contradictionNote.title)}</p>
+        <p class="grown-up__body">${escapeHTML(todaysPicture.contradictionNote.body)}</p>
+      </aside>`
+    : '';
 
   el.innerHTML = `
     <div class="section__inner today">
@@ -243,6 +295,8 @@ function renderTodaysPicture(el) {
         <p class="callout__mid">${escapeHTML(todaysPicture.callout.mid)}</p>
         <p class="callout__kicker">${escapeHTML(todaysPicture.callout.kicker)}</p>
       </aside>
+
+      ${contradiction}
     </div>
   `;
 }
@@ -250,7 +304,7 @@ function renderTodaysPicture(el) {
 function renderInvestorMistakes(el) {
   const { investorMistakes, sections } = CONTENT;
   const meta = sections.find((s) => s.id === 'investor-mistakes');
-  const cards = investorMistakes
+  const cards = (investorMistakes.cards || [])
     .map(
       (m, i) => `
       <article class="mistake">
@@ -261,6 +315,7 @@ function renderInvestorMistakes(el) {
           <path d="M2 8h26M22 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <p class="mistake__reality"><span class="mistake__tag mistake__tag--strong">Reality:</span> ${escapeHTML(m.reality)}</p>
+        ${m.nuance ? `<p class="mistake__nuance">${escapeHTML(m.nuance)}</p>` : ''}
       </article>`
     )
     .join('');
@@ -271,6 +326,7 @@ function renderInvestorMistakes(el) {
         <p class="section__roman">${escapeHTML(meta.roman)}</p>
         <h2 class="section__title" id="investor-mistakes-title">${escapeHTML(meta.label)}</h2>
       </header>
+      ${investorMistakes.lede ? `<p class="mistakes__lede">${escapeHTML(investorMistakes.lede)}</p>` : ''}
       <div class="mistakes">${cards}</div>
     </div>
   `;
@@ -279,16 +335,22 @@ function renderInvestorMistakes(el) {
 function renderWarningSigns(el) {
   const { warningSigns, sections } = CONTENT;
   const meta = sections.find((s) => s.id === 'warning-signs');
-  const items = warningSigns
+  const items = (warningSigns.items || [])
     .map(
       (w) => `
       <li class="sign">
-        <svg class="sign__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M12 3 L22 20 L2 20 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M12 10 V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
-        </svg>
+        <div class="sign__head">
+          <svg class="sign__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3 L22 20 L2 20 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12 10 V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
+          </svg>
+          <p class="sign__stat">${escapeHTML(w.stat)}</p>
+        </div>
         <p class="sign__title">${escapeHTML(w.title)}</p>
+        <p class="sign__statlabel">${escapeHTML(w.statLabel)}</p>
+        <p class="sign__body">${escapeHTML(w.body)}</p>
+        ${sourceLinkHTML(w.srcKey, { variant: 'card' })}
       </li>`
     )
     .join('');
@@ -299,6 +361,7 @@ function renderWarningSigns(el) {
         <p class="section__roman">${escapeHTML(meta.roman)}</p>
         <h2 class="section__title" id="warning-signs-title">${escapeHTML(meta.label)}</h2>
       </header>
+      ${warningSigns.lede ? `<p class="signs__lede">${escapeHTML(warningSigns.lede)}</p>` : ''}
       <ul class="signs">${items}</ul>
     </div>
   `;
@@ -343,27 +406,24 @@ function renderWhatToDo(el) {
   `;
 }
 
-const renderers = {
-  hero: renderHero,
-  'the-pattern':       renderThePattern,
-  'four-bubbles':      renderFourBubbles,
-  'todays-picture':    renderTodaysPicture,
-  'investor-mistakes': renderInvestorMistakes,
-  'warning-signs':     renderWarningSigns,
-  'what-to-do':        renderWhatToDo,
-  sources:             renderSources,
-};
-
 function renderSources(el) {
-  const { sources: src, sections, meta } = CONTENT;
+  const { sources: src, sections } = CONTENT;
   const sectionMeta = sections.find((s) => s.id === 'sources');
 
   const refs = src.references
-    .map((r) => {
+    .map((r, i) => {
+      const num = String(i + 1).padStart(2, '0');
       if (r.url) {
-        return `<li class="ref"><a href="${escapeHTML(r.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(r.label)}</a></li>`;
+        return `
+          <li class="ref">
+            <span class="ref__num">${num}</span>
+            <a class="ref__link" href="${escapeHTML(r.url)}" target="_blank" rel="noopener noreferrer">
+              <span class="ref__label">${escapeHTML(r.label)}</span>
+              <span class="ref__icon" aria-hidden="true">↗</span>
+            </a>
+          </li>`;
       }
-      return `<li class="ref">${escapeHTML(r.label)}</li>`;
+      return `<li class="ref"><span class="ref__num">${num}</span><span class="ref__label">${escapeHTML(r.label)}</span></li>`;
     })
     .join('');
 
@@ -383,6 +443,17 @@ function renderSources(el) {
     </div>
   `;
 }
+
+const renderers = {
+  hero: renderHero,
+  'the-pattern':       renderThePattern,
+  'four-bubbles':      renderFourBubbles,
+  'todays-picture':    renderTodaysPicture,
+  'investor-mistakes': renderInvestorMistakes,
+  'warning-signs':     renderWarningSigns,
+  'what-to-do':        renderWhatToDo,
+  sources:             renderSources,
+};
 
 function renderFooter() {
   const footer = document.querySelector('.site-footer');
@@ -419,7 +490,6 @@ function initMiniNav() {
   const heroEl = document.getElementById('hero');
   if (!wrap || !heroEl) return;
 
-  // Show after the hero leaves the viewport.
   const heroObserver = new IntersectionObserver(
     ([entry]) => {
       const heroVisible = entry.isIntersecting;
@@ -430,11 +500,8 @@ function initMiniNav() {
   );
   heroObserver.observe(heroEl);
 
-  // Track active section via observer.
   const links = wrap.querySelectorAll('.mini-nav__link');
   const stripLinks = document.querySelectorAll('.hero__strip-link');
-  const byId = new Map();
-  links.forEach((l) => byId.set(l.dataset.target, l));
 
   function setActive(id) {
     links.forEach((l) => {
@@ -452,7 +519,6 @@ function initMiniNav() {
   const sectionEls = CONTENT.sections.map((s) => document.getElementById(s.id)).filter(Boolean);
   const sectionObserver = new IntersectionObserver(
     (entries) => {
-      // Pick the entry with the largest intersection ratio that is intersecting.
       const visible = entries
         .filter((e) => e.isIntersecting)
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
@@ -468,7 +534,6 @@ function initMiniNav() {
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
 function animateNumber(el, finalText, durationMs = 800) {
-  // Parse the first numeric token; preserve everything else as a template.
   const match = finalText.match(/(-?\d+(?:\.\d+)?)/);
   if (!match) {
     el.style.opacity = '0';

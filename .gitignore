@@ -6,3 +6,7 @@ IMG_6016.jpg
 
 # Claude Code session state
 .claude/
+
+# Local-only session/progress tracking (cross-session notes, not for publication)
+CLAUDE.md
+progress.md
