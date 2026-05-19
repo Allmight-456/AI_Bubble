@@ -8,3 +8,4 @@ One-line entries per phase, in order.
 - Phase 3 — today's picture done.
 - Phase 4 — mistakes + warning signs done.
 - Phase 5 — what to do + closing done.
+- Phase 6 — sources + footer done.

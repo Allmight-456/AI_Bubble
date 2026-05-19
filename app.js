@@ -351,8 +351,51 @@ const renderers = {
   'investor-mistakes': renderInvestorMistakes,
   'warning-signs':     renderWarningSigns,
   'what-to-do':        renderWhatToDo,
-  sources:             (el) => { el.innerHTML = ''; el.dataset.placeholder = 'sources'; },
+  sources:             renderSources,
 };
+
+function renderSources(el) {
+  const { sources: src, sections, meta } = CONTENT;
+  const sectionMeta = sections.find((s) => s.id === 'sources');
+
+  const refs = src.references
+    .map((r) => {
+      if (r.url) {
+        return `<li class="ref"><a href="${escapeHTML(r.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(r.label)}</a></li>`;
+      }
+      return `<li class="ref">${escapeHTML(r.label)}</li>`;
+    })
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner sources">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(sectionMeta.roman)}</p>
+        <h2 class="section__title" id="sources-title">${escapeHTML(sectionMeta.label)}</h2>
+      </header>
+
+      <p class="sources__methodology">${escapeHTML(src.methodology)}</p>
+
+      <h3 class="sources__subhead">References</h3>
+      <ul class="sources__refs">${refs}</ul>
+
+      <p class="sources__disclaimer">${escapeHTML(src.disclaimer)}</p>
+    </div>
+  `;
+}
+
+function renderFooter() {
+  const footer = document.querySelector('.site-footer');
+  if (!footer) return;
+  const { meta } = CONTENT;
+  footer.innerHTML = `
+    <div class="site-footer__inner">
+      <span>© 2026</span>
+      <span>Last updated ${escapeHTML(meta.lastUpdated)}</span>
+      <span>This is a knowledge base, not investment advice.</span>
+    </div>
+  `;
+}
 
 // ---- Animations -------------------------------------------------------
 
@@ -418,6 +461,7 @@ function renderAll() {
     const fn = renderers[s.id];
     if (el && fn) fn(el);
   });
+  renderFooter();
   initMetricCounters();
 }
 
