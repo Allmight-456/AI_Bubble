@@ -290,3 +290,182 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   .hero__candle-wrap { right: 0; bottom: -1rem; }
   .hero__cypress { width: 60vw; }
 }
+
+/* ----- Section heads ---------------------------------------------------- */
+
+.section__head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.section__roman {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  opacity: 0.7;
+  letter-spacing: 0.05em;
+}
+.section--dark .section__roman { color: var(--oil-paper); }
+.section--cream .section__roman { color: var(--canvas-muted); }
+.section__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* ----- The Pattern (§I body) ------------------------------------------- */
+
+.pattern__grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.pattern__lede {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-h2);
+  line-height: 1.4;
+  color: var(--canvas-ink);
+  margin: 0;
+  max-width: 32ch;
+}
+.pattern__highlight {
+  background: var(--alarm-pink-glow);
+  color: inherit;
+  padding: 0.05em 0.2em;
+  border-radius: 2px;
+}
+
+.pattern__pillars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+.pillar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid var(--canvas-rule);
+  padding-top: 1rem;
+}
+.pillar__k {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1;
+  color: var(--canvas-ink);
+  letter-spacing: -0.02em;
+}
+.pillar__v {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--canvas-muted);
+  line-height: 1.4;
+}
+.pillar--alarm .pillar__k { color: var(--alarm-pink); }
+
+@media (max-width: 768px) {
+  .pattern__grid { grid-template-columns: 1fr; }
+  .pattern__pillars { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+}
+
+/* ----- Four Bubbles (§II) ---------------------------------------------- */
+
+.bubbles {
+  display: grid;
+  grid-template-columns: 1.1fr repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--canvas-rule);
+}
+.bubbles__row {
+  display: contents;
+}
+.bubbles__row--head > * { border-top: none; }
+
+.bubbles__corner { /* empty top-left */ }
+
+.bubbles__header,
+.bubbles__cell,
+.bubbles__rowlabel {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--canvas-rule);
+  border-right: 1px solid var(--canvas-rule);
+}
+.bubbles__row > *:first-child { border-left: 1px solid var(--canvas-rule); }
+
+.bubbles__header {
+  background: transparent;
+}
+.bubbles__name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  margin: 0 0 0.4rem;
+  color: var(--canvas-ink);
+}
+.bubbles__range {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--canvas-muted);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.bubbles__header--ai {
+  border-left: 3px solid var(--alarm-pink);
+}
+
+.bubbles__rowlabel {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-small);
+  color: var(--canvas-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(0,0,0,0.015);
+}
+.bubbles__cell {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--canvas-ink);
+}
+.bubbles__cell--ai { border-left: 3px solid var(--alarm-pink); }
+
+.bubbles__pct {
+  display: inline-block;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--alarm-pink);
+  margin-right: 0.2em;
+}
+
+@media (max-width: 768px) {
+  /* Mobile: keep the same grid, but allow horizontal scroll-snap pan
+     over a wider min-width so each column is readable. */
+  .bubbles {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    grid-template-columns: 9rem repeat(4, minmax(16rem, 1fr));
+    min-width: 100%;
+    width: max-content;
+    scrollbar-width: thin;
+  }
+  .bubbles__header,
+  .bubbles__cell,
+  .bubbles__rowlabel {
+    scroll-snap-align: start;
+    padding: 1rem 0.9rem;
+  }
+  .bubbles__name { font-size: 1.2rem; }
+  .bubbles__pct { font-size: 1.6rem; }
+}

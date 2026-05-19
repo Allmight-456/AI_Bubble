@@ -110,10 +110,100 @@ function renderHero(el) {
   `;
 }
 
+function renderThePattern(el) {
+  const { thePattern, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'the-pattern');
+  // Render lede with "fourth iteration" highlighted.
+  const ledeHTML = escapeHTML(thePattern.lede).replace(
+    'fourth iteration',
+    '<mark class="pattern__highlight">fourth iteration</mark>'
+  );
+
+  el.innerHTML = `
+    <div class="section__inner pattern">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(meta.roman)}</p>
+        <h2 class="section__title" id="the-pattern-title">${escapeHTML(meta.label)}</h2>
+      </header>
+
+      <div class="pattern__grid">
+        <p class="pattern__lede">${ledeHTML}</p>
+        <ul class="pattern__pillars">
+          ${thePattern.pillars
+            .map(
+              (p) => `
+            <li class="pillar ${p.k === '?' ? 'pillar--alarm' : ''}">
+              <span class="pillar__k">${escapeHTML(p.k)}</span>
+              <span class="pillar__v">${escapeHTML(p.v)}</span>
+            </li>`
+            )
+            .join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+function renderFourBubbles(el) {
+  const { fourBubbles, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'four-bubbles');
+  const headers = fourBubbles.headers;
+  const headerCells = headers
+    .map((h, i) => {
+      if (i === 0) return `<div class="bubbles__corner" aria-hidden="true"></div>`;
+      const [name, range] = h.split('\n');
+      const aiClass = i === headers.length - 1 ? ' bubbles__header--ai' : '';
+      return `
+        <div class="bubbles__header${aiClass}" role="columnheader">
+          <p class="bubbles__name">${escapeHTML(name)}</p>
+          <p class="bubbles__range">${escapeHTML(range)}</p>
+        </div>`;
+    })
+    .join('');
+
+  const rows = fourBubbles.rows
+    .map((row, rIdx) => {
+      const isPctRow = row.label === 'What happened next?';
+      const cells = row.cells
+        .map((c, cIdx) => {
+          const isAi = cIdx === row.cells.length - 1;
+          let body = escapeHTML(c);
+          if (isPctRow) {
+            // Highlight ~78%, ~63%, ~57% on non-AI; "?" or numeric on AI not present.
+            body = body.replace(/~(\d{2})%/g, '<span class="bubbles__pct">~$1%</span>');
+          }
+          return `<div class="bubbles__cell${isAi ? ' bubbles__cell--ai' : ''}" role="cell">${body}</div>`;
+        })
+        .join('');
+      return `
+        <div class="bubbles__row" role="row">
+          <div class="bubbles__rowlabel" role="rowheader">${escapeHTML(row.label)}</div>
+          ${cells}
+        </div>`;
+    })
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(meta.roman)}</p>
+        <h2 class="section__title" id="four-bubbles-title">${escapeHTML(meta.label)}</h2>
+      </header>
+
+      <div class="bubbles" role="table" aria-label="Comparison of four asset bubbles">
+        <div class="bubbles__row bubbles__row--head" role="row">
+          ${headerCells}
+        </div>
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+
 const renderers = {
   hero: renderHero,
-  'the-pattern':       (el) => { el.innerHTML = ''; el.dataset.placeholder = 'the-pattern'; },
-  'four-bubbles':      (el) => { el.innerHTML = ''; el.dataset.placeholder = 'four-bubbles'; },
+  'the-pattern':  renderThePattern,
+  'four-bubbles': renderFourBubbles,
   'todays-picture':    (el) => { el.innerHTML = ''; el.dataset.placeholder = 'todays-picture'; },
   'investor-mistakes': (el) => { el.innerHTML = ''; el.dataset.placeholder = 'investor-mistakes'; },
   'warning-signs':     (el) => { el.innerHTML = ''; el.dataset.placeholder = 'warning-signs'; },
