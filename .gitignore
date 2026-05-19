@@ -1,0 +1,8 @@
+# Source poster — kept locally for reference, not for publication
+IMG_6016.jpg
+
+# OS noise
+.DS_Store
+
+# Claude Code session state
+.claude/
