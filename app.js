@@ -247,13 +247,70 @@ function renderTodaysPicture(el) {
   `;
 }
 
+function renderInvestorMistakes(el) {
+  const { investorMistakes, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'investor-mistakes');
+  const cards = investorMistakes
+    .map(
+      (m, i) => `
+      <article class="mistake">
+        <p class="mistake__num">MISTAKE ${String(i + 1).padStart(2, '0')}</p>
+        <h3 class="mistake__title">${escapeHTML(m.title)}</h3>
+        <p class="mistake__belief"><span class="mistake__tag">Belief:</span> ${escapeHTML(m.belief)}</p>
+        <svg class="mistake__arrow" viewBox="0 0 32 16" aria-hidden="true" focusable="false">
+          <path d="M2 8h26M22 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="mistake__reality"><span class="mistake__tag mistake__tag--strong">Reality:</span> ${escapeHTML(m.reality)}</p>
+      </article>`
+    )
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(meta.roman)}</p>
+        <h2 class="section__title" id="investor-mistakes-title">${escapeHTML(meta.label)}</h2>
+      </header>
+      <div class="mistakes">${cards}</div>
+    </div>
+  `;
+}
+
+function renderWarningSigns(el) {
+  const { warningSigns, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'warning-signs');
+  const items = warningSigns
+    .map(
+      (w) => `
+      <li class="sign">
+        <svg class="sign__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3 L22 20 L2 20 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M12 10 V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
+        </svg>
+        <p class="sign__title">${escapeHTML(w.title)}</p>
+      </li>`
+    )
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(meta.roman)}</p>
+        <h2 class="section__title" id="warning-signs-title">${escapeHTML(meta.label)}</h2>
+      </header>
+      <ul class="signs">${items}</ul>
+    </div>
+  `;
+}
+
 const renderers = {
   hero: renderHero,
-  'the-pattern':    renderThePattern,
-  'four-bubbles':   renderFourBubbles,
-  'todays-picture': renderTodaysPicture,
-  'investor-mistakes': (el) => { el.innerHTML = ''; el.dataset.placeholder = 'investor-mistakes'; },
-  'warning-signs':     (el) => { el.innerHTML = ''; el.dataset.placeholder = 'warning-signs'; },
+  'the-pattern':       renderThePattern,
+  'four-bubbles':      renderFourBubbles,
+  'todays-picture':    renderTodaysPicture,
+  'investor-mistakes': renderInvestorMistakes,
+  'warning-signs':     renderWarningSigns,
   'what-to-do':        (el) => { el.innerHTML = ''; el.dataset.placeholder = 'what-to-do'; },
   sources:             (el) => { el.innerHTML = ''; el.dataset.placeholder = 'sources'; },
 };

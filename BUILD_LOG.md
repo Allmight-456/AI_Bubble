@@ -6,3 +6,4 @@ One-line entries per phase, in order.
 - Phase 1 — hero done.
 - Phase 2 — pattern + four bubbles done.
 - Phase 3 — today's picture done.
+- Phase 4 — mistakes + warning signs done.

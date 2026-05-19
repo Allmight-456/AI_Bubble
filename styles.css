@@ -572,3 +572,107 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   .metrics { grid-template-columns: 1fr; }
   .today__head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ----- Investor Mistakes (§IV) ----------------------------------------- */
+
+.mistakes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.mistake {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto;
+  gap: 0.6rem;
+  padding: 1.75rem;
+  border: 1px solid var(--canvas-rule);
+  background: rgba(255,255,255,0.4);
+}
+.mistake__num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--canvas-muted);
+  margin: 0;
+}
+.mistake__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: var(--fs-h2);
+  line-height: 1.15;
+  color: var(--canvas-ink);
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+.mistake__belief {
+  font-family: var(--font-sans);
+  font-style: italic;
+  color: var(--canvas-muted);
+  margin: 0;
+}
+.mistake__arrow {
+  width: 32px; height: 16px;
+  color: var(--alarm-pink);
+  margin: 0.25rem 0;
+}
+.mistake__reality {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--canvas-ink);
+  margin: 0;
+}
+.mistake__tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--canvas-muted);
+  margin-right: 0.4rem;
+  font-style: normal;
+  font-weight: 500;
+}
+.mistake__tag--strong { color: var(--alarm-pink); }
+
+@media (max-width: 768px) {
+  .mistakes { grid-template-columns: 1fr; }
+  .mistake { padding: 1.25rem; }
+}
+
+/* ----- Warning Signs (§V) ---------------------------------------------- */
+
+.signs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+.sign {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(234, 224, 204, 0.18);
+}
+.sign__icon {
+  width: 36px;
+  height: 36px;
+  color: var(--alarm-pink);
+  filter: drop-shadow(0 0 8px var(--alarm-pink-glow));
+}
+.sign__title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  line-height: 1.2;
+  color: var(--oil-paper);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 768px) {
+  .signs { grid-template-columns: 1fr; }
+}
