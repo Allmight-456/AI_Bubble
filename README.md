@@ -2,7 +2,7 @@
 
 A static, single-page editorial site about AI stock valuations in May 2026 and the historical pattern of asset bubbles. Knowledge base, not investment advice.
 
-![AI: A Quiet Warning — site preview](./AI_Bubble.png)
+[![AI: A Quiet Warning — site preview](./AI_Bubble.png)](https://allmight-456.github.io/AI_Bubble/)
 
 Vision and content spec: see `ai_bubble_site_spec.md`.
 
