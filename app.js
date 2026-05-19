@@ -304,6 +304,45 @@ function renderWarningSigns(el) {
   `;
 }
 
+function renderWhatToDo(el) {
+  const { whatToDo, finalReminder, closingLine, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'what-to-do');
+
+  const rows = whatToDo
+    .map(
+      (w) => `
+      <li class="action">
+        <span class="action__num">${escapeHTML(w.num)}</span>
+        <div class="action__copy">
+          <p class="action__title">${escapeHTML(w.title)}</p>
+          <p class="action__body">${escapeHTML(w.body)}</p>
+        </div>
+      </li>`
+    )
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner">
+      <header class="section__head">
+        <p class="section__roman">${escapeHTML(meta.roman)}</p>
+        <h2 class="section__title" id="what-to-do-title">${escapeHTML(meta.label)}</h2>
+      </header>
+
+      <ol class="actions">${rows}</ol>
+
+      <blockquote class="reminder">
+        ${escapeHTML(finalReminder)}
+      </blockquote>
+
+      <div class="closing">
+        <p class="closing__a">${escapeHTML(closingLine.a)}</p>
+        <p class="closing__b">${escapeHTML(closingLine.b)}</p>
+        <p class="closing__c"><span class="t-underline-pink">Optionality</span> tomorrow.</p>
+      </div>
+    </div>
+  `;
+}
+
 const renderers = {
   hero: renderHero,
   'the-pattern':       renderThePattern,
@@ -311,7 +350,7 @@ const renderers = {
   'todays-picture':    renderTodaysPicture,
   'investor-mistakes': renderInvestorMistakes,
   'warning-signs':     renderWarningSigns,
-  'what-to-do':        (el) => { el.innerHTML = ''; el.dataset.placeholder = 'what-to-do'; },
+  'what-to-do':        renderWhatToDo,
   sources:             (el) => { el.innerHTML = ''; el.dataset.placeholder = 'sources'; },
 };
 

@@ -676,3 +676,100 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
 @media (max-width: 768px) {
   .signs { grid-template-columns: 1fr; }
 }
+
+/* ----- What To Do (§VI) + Final Reminder + Closing --------------------- */
+
+.actions {
+  list-style: none;
+  margin: 0 0 clamp(3rem, 6vw, 5rem);
+  padding: 0;
+  border-top: 1px solid var(--canvas-rule);
+}
+.action {
+  display: grid;
+  grid-template-columns: clamp(5rem, 10vw, 8rem) 1fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: baseline;
+  padding: clamp(1.5rem, 3vw, 2.25rem) 0;
+  border-bottom: 1px solid var(--canvas-rule);
+}
+.action__num {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1;
+  color: var(--canvas-muted);
+  letter-spacing: -0.02em;
+}
+.action__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.action__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  line-height: 1.2;
+  color: var(--canvas-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.action__body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  color: var(--canvas-muted);
+  margin: 0;
+  font-size: var(--fs-body);
+}
+
+.reminder {
+  border: 2px solid var(--alarm-pink);
+  background: var(--canvas-cream);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-h1);
+  line-height: 1.2;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto clamp(3rem, 6vw, 5rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: var(--canvas-ink);
+  letter-spacing: -0.01em;
+}
+
+.closing {
+  text-align: center;
+  font-family: var(--font-serif);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.closing__a {
+  font-style: normal;
+  font-size: var(--fs-h2);
+  color: var(--canvas-muted);
+  margin: 0;
+}
+.closing__b {
+  font-style: normal;
+  font-weight: 700;
+  font-size: var(--fs-h1);
+  color: var(--canvas-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.closing__c {
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--fs-h1);
+  color: var(--canvas-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.closing__c .t-underline-pink { color: var(--alarm-pink); }
+
+@media (max-width: 768px) {
+  .action { grid-template-columns: 4rem 1fr; gap: 1rem; }
+  .action__num { font-size: 2.5rem; }
+}
