@@ -200,16 +200,118 @@ function renderFourBubbles(el) {
   `;
 }
 
+const METRIC_ICONS = {
+  chart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16l4-6 4 3 6-9"/></svg>`,
+  chip:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 3v2M12 3v2M15 3v2M9 19v2M12 19v2M15 19v2M3 9h2M3 12h2M3 15h2M19 9h2M19 12h2M19 15h2"/></svg>`,
+  pie:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/></svg>`,
+  dollar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M16 7.5C16 6 14.5 5 12 5s-4 1.2-4 3 1.5 2.5 4 3 4 1.2 4 3-1.8 3-4 3-4-1-4-2.5"/></svg>`,
+  cloud: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.4A4 4 0 0117 18H7z"/></svg>`,
+  people:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 20c0-2 2-3.5 4-3.5s4 1.5 4 3.5"/></svg>`,
+};
+
+function renderTodaysPicture(el) {
+  const { todaysPicture, sections } = CONTENT;
+  const meta = sections.find((s) => s.id === 'todays-picture');
+
+  const metricCards = todaysPicture.metrics
+    .map((m) => {
+      const icon = METRIC_ICONS[m.icon] || '';
+      return `
+        <article class="metric">
+          <div class="metric__icon" aria-hidden="true">${icon}</div>
+          <p class="metric__label">${escapeHTML(m.label)}</p>
+          <p class="metric__value" data-value="${escapeHTML(m.value)}">${escapeHTML(m.value)}</p>
+          <p class="metric__context">${escapeHTML(m.context)}</p>
+        </article>`;
+    })
+    .join('');
+
+  el.innerHTML = `
+    <div class="section__inner today">
+      <header class="section__head today__head">
+        <div>
+          <p class="section__roman">${escapeHTML(meta.roman)}</p>
+          <h2 class="section__title" id="todays-picture-title">${escapeHTML(todaysPicture.title)}</h2>
+        </div>
+        <p class="today__asof">${escapeHTML(todaysPicture.asOf)}</p>
+      </header>
+
+      <div class="metrics">${metricCards}</div>
+
+      <aside class="callout" role="note">
+        <p class="callout__lead">${escapeHTML(todaysPicture.callout.lead)}</p>
+        <p class="callout__mid">${escapeHTML(todaysPicture.callout.mid)}</p>
+        <p class="callout__kicker">${escapeHTML(todaysPicture.callout.kicker)}</p>
+      </aside>
+    </div>
+  `;
+}
+
 const renderers = {
   hero: renderHero,
-  'the-pattern':  renderThePattern,
-  'four-bubbles': renderFourBubbles,
-  'todays-picture':    (el) => { el.innerHTML = ''; el.dataset.placeholder = 'todays-picture'; },
+  'the-pattern':    renderThePattern,
+  'four-bubbles':   renderFourBubbles,
+  'todays-picture': renderTodaysPicture,
   'investor-mistakes': (el) => { el.innerHTML = ''; el.dataset.placeholder = 'investor-mistakes'; },
   'warning-signs':     (el) => { el.innerHTML = ''; el.dataset.placeholder = 'warning-signs'; },
   'what-to-do':        (el) => { el.innerHTML = ''; el.dataset.placeholder = 'what-to-do'; },
   sources:             (el) => { el.innerHTML = ''; el.dataset.placeholder = 'sources'; },
 };
+
+// ---- Animations -------------------------------------------------------
+
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+function animateNumber(el, finalText, durationMs = 800) {
+  // Parse the first numeric token; preserve everything else as a template.
+  const match = finalText.match(/(-?\d+(?:\.\d+)?)/);
+  if (!match) {
+    el.style.opacity = '0';
+    requestAnimationFrame(() => {
+      el.style.transition = `opacity ${durationMs}ms ease-out`;
+      el.style.opacity = '1';
+    });
+    return;
+  }
+  const target = parseFloat(match[1]);
+  const decimals = (match[1].split('.')[1] || '').length;
+  const before = finalText.slice(0, match.index);
+  const after  = finalText.slice(match.index + match[0].length);
+  const start = performance.now();
+
+  function tick(now) {
+    const t = Math.min(1, (now - start) / durationMs);
+    const v = target * easeOutCubic(t);
+    el.textContent = `${before}${v.toFixed(decimals)}${after}`;
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = finalText;
+  }
+  el.textContent = `${before}0${after}`;
+  requestAnimationFrame(tick);
+}
+
+function initMetricCounters() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const values = document.querySelectorAll('.metric__value');
+  if (!values.length) return;
+  if (reduceMotion || !('IntersectionObserver' in window)) return;
+
+  const seen = new WeakSet();
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !seen.has(entry.target)) {
+          seen.add(entry.target);
+          const final = entry.target.dataset.value || entry.target.textContent;
+          animateNumber(entry.target, final, 800);
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.4 }
+  );
+  values.forEach((el) => io.observe(el));
+}
 
 function renderAll() {
   setMeta();
@@ -220,6 +322,7 @@ function renderAll() {
     const fn = renderers[s.id];
     if (el && fn) fn(el);
   });
+  initMetricCounters();
 }
 
 if (document.readyState === 'loading') {
