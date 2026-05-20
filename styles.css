@@ -52,6 +52,11 @@ body {
   color: var(--canvas-ink);
   background: var(--canvas-cream);
   -webkit-font-smoothing: antialiased;
+  /* Safety net: any stray horizontal overflow (off-canvas SVGs, wide tables)
+     is clipped instead of triggering page-wide horizontal scroll on mobile.
+     `clip` keeps the document a single scroll container, so `position: sticky`
+     on the mini-nav continues to work. */
+  overflow-x: clip;
 }
 
 a { color: inherit; text-decoration-color: var(--alarm-pink); text-underline-offset: 0.15em; }
@@ -345,8 +350,24 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
     color: var(--canvas-ink);
   }
 
-  .hero__candle-wrap { right: 0; bottom: -1rem; }
+  .hero__candle-wrap {
+    right: -0.5rem;
+    bottom: auto;
+    top: 0.5rem;
+    width: clamp(80px, 22vw, 130px);
+    opacity: 0.85;
+  }
   .hero__cypress { width: 60vw; }
+}
+
+/* Very narrow phones — keep the candle tucked at the top corner so it never
+   overlaps the subtitle text. */
+@media (max-width: 420px) {
+  .hero__candle-wrap {
+    width: 78px;
+    top: 0.25rem;
+    right: -0.25rem;
+  }
 }
 
 /* ----- Section heads ---------------------------------------------------- */
@@ -410,6 +431,10 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   gap: 0.5rem;
   border-top: 1px solid var(--canvas-rule);
   padding-top: 1rem;
+  /* Without min-width:0, the pillar's intrinsic min-content (long source
+     label with white-space:nowrap) forces its grid track wider than 1fr,
+     which on mobile pushes the section past the viewport edge. */
+  min-width: 0;
 }
 .pillar__k {
   font-family: var(--font-serif);
@@ -449,6 +474,10 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   padding-bottom: 1px;
   transition: opacity 0.15s ease, color 0.15s ease;
   max-width: 100%;
+  /* allow shrinking inside flex/grid parents so long labels don't expand
+     pillars or voice cards beyond the viewport on mobile */
+  min-width: 0;
+  overflow: hidden;
 }
 .src:hover, .src:focus-visible {
   opacity: 1;
@@ -459,7 +488,11 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 24rem;
+  /* was 24rem — that fixed cap let labels push past narrow pillars/voice
+     cards. 100% shrinks to the container and ellipses cleanly. */
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 .src__icon { font-style: normal; }
 .src--inline { margin-top: 0.4rem; }
@@ -498,6 +531,9 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  /* Same shrink-allowance as `.pillar` — keeps long source labels from
+     pushing the voice card wider than its grid track. */
+  min-width: 0;
 }
 .voice__quote {
   margin: 0;
@@ -612,16 +648,18 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
 }
 
 @media (max-width: 768px) {
-  /* Mobile: keep the same grid, but allow horizontal scroll-snap pan
-     over a wider min-width so each column is readable. */
+  /* Mobile: the grid stays wider than the viewport, but ONLY the grid
+     scrolls horizontally — never the page. `width: 100%` + overflow-x:auto
+     keeps the table inside its own scroll context. */
   .bubbles {
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     grid-template-columns: 9rem repeat(4, minmax(16rem, 1fr));
-    min-width: 100%;
-    width: max-content;
+    width: 100%;
+    max-width: 100%;
     scrollbar-width: thin;
   }
   .bubbles__header,
@@ -666,6 +704,8 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  /* Same shrink-allowance — see `.pillar`/`.voice`/`.sign` for rationale. */
+  min-width: 0;
 }
 .metric__icon {
   width: 28px; height: 28px;
@@ -881,6 +921,10 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   border: 1px solid rgba(234, 224, 204, 0.14);
   border-top: 2px solid var(--alarm-pink);
   background: rgba(234, 224, 204, 0.03);
+  /* Grid item must be allowed to shrink — otherwise its min-content
+     (which includes the nowrap source label) forces the track wider
+     than 1fr on mobile. */
+  min-width: 0;
 }
 .sign__head {
   display: flex;
@@ -1130,6 +1174,34 @@ a:focus-visible { outline: 2px solid var(--alarm-pink); outline-offset: 3px; }
   outline: 2px solid var(--alarm-pink);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* ----- Responsive polish (additive, mobile / iPad) --------------------- */
+
+/* Anchor jumps clear the sticky mini-nav. */
+html { scroll-padding-top: 4rem; }
+
+/* Long stat strings shouldn't break out of narrow cards. */
+.metric__value,
+.sign__stat { overflow-wrap: anywhere; }
+
+/* §II — fix horizontal-page-scroll on mobile.
+   Previously `.bubbles` had `width: max-content` which made the grid itself
+   wider than the viewport, so the page scrolled instead of just the table.
+   Constraining width keeps the scroll inside `.bubbles` where it belongs. */
+@media (max-width: 768px) {
+  .bubbles {
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+  }
+}
+
+/* Touch-only: bump small numeric tap targets toward 44px. */
+@media (hover: none) and (pointer: coarse) {
+  .mini-nav__link   { min-width: 2.4rem; height: 2.4rem; }
+  .hero__strip-link { width: 2.75rem;    height: 2.75rem; }
+  .hero__index-link { padding: 0.6rem 0; }
 }
 
 /* ----- Print ----------------------------------------------------------- */
